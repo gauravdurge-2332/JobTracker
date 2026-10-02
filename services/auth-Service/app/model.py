@@ -5,7 +5,7 @@ class Base(DeclarativeBase):
     pass
 
 class User(Base):
-    __tablename__="User"
+    __tablename__="user"
 
     id:Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email:Mapped[str] = mapped_column(String(35) ,unique=True , index=True , nullable=False)
