@@ -10,13 +10,16 @@ requires-python = ">=3.14"
 dependencies = [
     "boto3>=1.43.105",
     "fastapi[standard]>=0.142.0",
-    "pwdlib>=0.3.1",
+    "httpx>=0.28.1",
+    "psycopg[binary]>=3.3.6",
+    "pwdlib[argon2]>=0.3.1",
+    "pyjwt>=2.15.1",
     "sqlalchemy>=2.1.1",
 ]
-
-[project.scripts]
-job-tracker = "job_tracker:main"
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv]
+package = false

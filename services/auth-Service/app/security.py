@@ -15,10 +15,10 @@ def hash_Password(password: str) -> str:
 def verifyPassword(password: str, hashed: str) -> bool:
     return password_hash.verify(password, hashed)
 
-JWT_SECRET = os.getenv("JWT_SECRET")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
+JWT_SECRET = os.getenv("JWT_SECRET" , "HappybirthdayGaurav")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM" , "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(
-    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES" , "30")
 )
 
 

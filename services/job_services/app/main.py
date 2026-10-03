@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager 
 from app.routes import jobs
-
+from app.auth import UserDep
 from app.dynamodb import create_table_if_missing
 
 @asynccontextmanager
@@ -17,4 +17,5 @@ app.include_router(jobs.router)
 @app.get("/health")
 def health():
     return {"status" : "ok"}
+
 
