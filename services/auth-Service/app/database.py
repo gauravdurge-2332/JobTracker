@@ -3,8 +3,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import os 
 
 
-DATABASE_URL = "postgresql+psycopg://postgres:240906@localhost:5432/authentication"
-
+DATABASE_URL = os.environ["DATABASE_URL"]
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(

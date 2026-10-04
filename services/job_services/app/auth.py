@@ -5,7 +5,7 @@ import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-AUTH_SERVICE_URL = "http://localhost:8002"
+AUTH_SERVICE_URL = os.environ["AUTH_SERVICE_URL"]
 
 bearer = HTTPBearer()
 
@@ -16,7 +16,7 @@ async def get_current_user_id(cred : Annotated[HTTPAuthorizationCredentials , De
                 f"{AUTH_SERVICE_URL}/auth/verify",
                 headers={"Authorization": f"Bearer {cred.credentials}"},
             )
-    except httpx.RequestError:
+    except httpx.RequestError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Auth service unavailable",
