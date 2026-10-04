@@ -1,6 +1,7 @@
 import uuid
 from typing import Annotated, Any
-
+from fastapi import BackgroundTasks, Request
+from app.events import publish_status_change
 from boto3.dynamodb.conditions import Key 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -44,10 +45,30 @@ def get_job(job_id : str , table : Tabledep , user_id:UserDep):
 
 
 @router.put("/{job_id}", response_model=JobOut)
-def update_job(job_id: str, payload: JobCreate, table: Tabledep , user_id : UserDep):
-    _get_job_404(table,user_id, job_id)          # raises 404 if the job doesn't exist
+def update_job(job_id: str, payload: JobCreate, table: Tabledep , user_id : UserDep,
+               request : Request,backgroud_task : BackgroundTasks):
+    
+    old = _get_job_404(table,user_id, job_id)          # raises 404 if the job doesn't exist
     item = {"user_id": user_id, "id": job_id, **payload.model_dump(mode="json")}
-    table.put_item(Item=item)               # same key, so it overwrites the old item
+    table.put_item(Item=item) 
+    
+    
+    if old["status"] != item["status"]:
+        #publish the event in the RabbitMQ
+        event = {
+            "user_id": user_id,
+            "job_id": job_id,
+            "company":item["company"],
+            "role":item["role"],
+            "old_status": old["status"],
+            "new_status": item["status"],
+        }
+        backgroud_task.add_task(
+            publish_status_change , 
+            request.app.state.rabbit , 
+            event
+        )
+               
     return item
 
 

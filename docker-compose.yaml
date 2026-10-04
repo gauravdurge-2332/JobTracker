@@ -17,7 +17,7 @@ services:
     image: amazon/dynamodb-local
     ports:
       - "8000:8000"
-      
+
   auth-service:
     build: ./services/auth-Service
     ports:
@@ -30,20 +30,42 @@ services:
     depends_on:
       auth-db:
         condition: service_healthy
-  
+
   jobs-service:
     build: ./services/job_services
     ports:
       - "8001:8001"
     environment:
       AUTH_SERVICE_URL: http://auth-service:8002
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
       DYNAMODB_ENDPOINT: http://dynamodb:8000
       AWS_REGION: ap-south-1
       AWS_ACCESS_KEY_ID: dummy
       AWS_SECRET_ACCESS_KEY: dummy
     depends_on:
-      - auth-service
-      - dynamodb
+      auth-service:
+        condition: service_started
+      dynamodb:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
   auth-db-data:
