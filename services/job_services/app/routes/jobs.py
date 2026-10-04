@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.dynamodb import get_table
 from app.scehma import JobCreate, JobOut
-from app.auth import UserDep
+from app.auth import UserDep , CurrentUserDep
 
 router = APIRouter(prefix="/jobs" , tags=["Jobs_APIS"])
 
@@ -46,6 +46,7 @@ def get_job(job_id : str , table : Tabledep , user_id:UserDep):
 
 @router.put("/{job_id}", response_model=JobOut)
 def update_job(job_id: str, payload: JobCreate, table: Tabledep , user_id : UserDep,
+               user : CurrentUserDep,
                request : Request,backgroud_task : BackgroundTasks):
     
     old = _get_job_404(table,user_id, job_id)          # raises 404 if the job doesn't exist
@@ -58,8 +59,9 @@ def update_job(job_id: str, payload: JobCreate, table: Tabledep , user_id : User
         event = {
             "user_id": user_id,
             "job_id": job_id,
-            "company":item["company"],
-            "role":item["role"],
+            "company":old["company"],
+            "email" : user.email,
+            "role":old["role"],
             "old_status": old["status"],
             "new_status": item["status"],
         }
