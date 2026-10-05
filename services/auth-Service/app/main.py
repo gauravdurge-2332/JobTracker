@@ -1,10 +1,9 @@
 from fastapi import FastAPI
-from fastapi.concurrency import asynccontextmanager 
+from fastapi.concurrency import asynccontextmanager
 
-from app.routes import authRoutes
-from app.model import Base
 from app.database import engine
-
+from app.model import Base
+from app.routes import authRoutes
 
 
 @asynccontextmanager

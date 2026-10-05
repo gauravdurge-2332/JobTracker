@@ -1,7 +1,8 @@
 from datetime import date
 from enum import Enum
 
-from pydantic import BaseModel,Field
+from pydantic import BaseModel, Field
+
 
 #This is the Enum class the option for object values is fixed
 class JobStatus(str , Enum):

@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
+
 class CurrentUser(BaseModel):
     id: str
     email: str
@@ -22,7 +23,7 @@ async def get_current_user(cred : Annotated[HTTPAuthorizationCredentials , Depen
                 f"{AUTH_SERVICE_URL}/auth/verify",
                 headers={"Authorization": f"Bearer {cred.credentials}"},
             )
-    except httpx.RequestError as exc:
+    except httpx.RequestError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Auth service unavailable",

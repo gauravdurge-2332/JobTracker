@@ -1,13 +1,13 @@
 import uuid
 from typing import Annotated, Any
-from fastapi import BackgroundTasks, Request
-from app.events import publish_status_change
-from boto3.dynamodb.conditions import Key 
-from fastapi import APIRouter, Depends, HTTPException, status
 
+from boto3.dynamodb.conditions import Key
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
+
+from app.auth import CurrentUserDep, UserDep
 from app.dynamodb import get_table
+from app.events import publish_status_change
 from app.scehma import JobCreate, JobOut
-from app.auth import UserDep , CurrentUserDep
 
 router = APIRouter(prefix="/jobs" , tags=["Jobs_APIS"])
 

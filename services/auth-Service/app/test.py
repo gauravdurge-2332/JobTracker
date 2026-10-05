@@ -1,4 +1,4 @@
-import os 
+import os
 
 url = os.getenv("DATABASE_URL") 
 print(url)
