@@ -38,9 +38,46 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8002
       AWS_REGION: ${AWS_REGION:?Set AWS_REGION in the server .env}
       JOBS_TABLE: jobs
+      RABBITMQ_URL: amqp://jobtracker:${RABBITMQ_PASSWORD:?Set a URL-safe RABBITMQ_PASSWORD in the server .env}@rabbitmq:5672/
     depends_on:
       auth-service:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    hostname: jobtracker-rabbitmq
+    restart: unless-stopped
+    mem_limit: 384m
+    environment:
+      RABBITMQ_DEFAULT_USER: jobtracker
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set a URL-safe RABBITMQ_PASSWORD in the server .env}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq.prod.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 60s
+
+  notification-service:
+    image: ghcr.io/gauravdurge-2332/jobtracker/notification-service:latest
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      RABBITMQ_URL: amqp://jobtracker:${RABBITMQ_PASSWORD:?Set a URL-safe RABBITMQ_PASSWORD in the server .env}@rabbitmq:5672/
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:?Set SMTP_USER in the server .env}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:?Set SMTP_PASSWORD in the server .env}
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   pgdata:
+  rabbitmq-data:
