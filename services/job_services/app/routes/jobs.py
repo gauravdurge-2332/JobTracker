@@ -54,7 +54,7 @@ def update_job(job_id: str, payload: JobCreate, table: Tabledep , user_id : User
     table.put_item(Item=item) 
     
     
-    if old["status"] != item["status"]:
+    if old["status"] != item["status"] and request.app.state.rabbit is not None:
         #publish the event in the RabbitMQ
         event = {
             "user_id": user_id,

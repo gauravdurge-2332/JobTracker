@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: authentication
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d authentication"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth-service:
+    image: ghcr.io/gauravdurge-2332/jobtracker/auth-service:sha-c1d57c2
+    restart: unless-stopped
+    mem_limit: 256m
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/authentication
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  jobs-service:
+    image: ghcr.io/gauravdurge-2332/jobtracker/jobs-service:latest
+    restart: unless-stopped
+    mem_limit: 256m
+    ports:
+      - "8001:8001"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8002
+      AWS_REGION: ${AWS_REGION:?Set AWS_REGION in the server .env}
+      JOBS_TABLE: jobs
+    depends_on:
+      auth-service:
+        condition: service_started
+
+volumes:
+  pgdata:

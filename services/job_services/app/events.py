@@ -3,10 +3,12 @@ import os
 
 import aio_pika
 
-RABBITMQ_URL = os.environ["RABBITMQ_URL"]
+RABBITMQ_URL = os.getenv("RABBITMQ_URL")
 EXCHANGE_NAME = "jobs"
 
-async def connect() -> aio_pika.abc.AbstractRobustConnection:
+async def connect() -> aio_pika.abc.AbstractRobustConnection | None:
+    if not RABBITMQ_URL:
+        return None
     return await aio_pika.connect_robust(RABBITMQ_URL)
 
 async def publish_status_change(connection , event : dict):
